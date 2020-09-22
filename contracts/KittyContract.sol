@@ -41,7 +41,7 @@ contract Kittycontract is IERC721, Ownable {
         uint256 newKittyId = kitties.push(_kitty) - 1;
         _transfer(address(0), _owner, newKittyId);
 
-        emit Birth(_owner, newKittyId, momId, dadId, dna);
+        emit Birth(_owner, newKittyId, _momId, _dadId, _dna);
 
         return newKittyId;
     }
