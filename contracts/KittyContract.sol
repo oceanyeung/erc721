@@ -46,6 +46,26 @@ contract Kittycontract is IERC721, Ownable {
         return newKittyId;
     }
 
+    function getKitty(uint256 _id) external view returns(
+        uint256 dna,
+        uint256 birthTime,
+        uint256 momId,
+        uint256 dadId,
+        uint256 generation,
+        address owner
+    ) {
+        require(_id < kitties.length, "Kitty does not exist");
+
+        Kitty storage kitty = kitties[_id];
+
+        dna = kitty.dna;
+        birthTime = uint256(kitty.birthTime);
+        momId = uint256(kitty.momId);
+        dadId = uint256(kitty.dadId);
+        generation = uint256(kitty.generation);
+        owner = kittyOwner[_id];
+    }
+
     /**
      * @dev Returns the number of tokens in ``owner``'s account.
      */
