@@ -2,12 +2,15 @@ pragma solidity ^0.5.12;
 
 import "./IERC721.sol";
 import "./SafeMath.sol";
+import "./Ownable.sol";
 
-contract Kittycontract is IERC721 {
+contract Kittycontract is IERC721, Ownable {
     using SafeMath for uint256;
 
     string public constant _name = "Kitty";
     string public constant _symbol = "KIT";
+
+    event Birth(address owner, uint256 kittyId, uint256 momId, uint256 dadId, uint256 dna);
 
     struct Kitty {
         uint256 dna;        
@@ -21,6 +24,27 @@ contract Kittycontract is IERC721 {
 
     mapping(address => uint256) ownerTokenCount;
     mapping(uint256 => address) kittyOwner;
+
+    function createKittyGen0(uint256 _dna) public onlyOwner {
+        _createKitty(0, 0, 0, _dna, msg.sender);
+    }
+
+    function _createKitty(uint256 _momId, uint256 _dadId, uint256 _generation, uint256 _dna, address _owner) private returns (uint256) {
+        Kitty memory _kitty = Kitty({
+            dna: _dna,
+            birthTime: uint64(now),
+            momId: uint32(_momId),
+            dadId: uint32(_dadId),
+            generation: uint16(_generation)
+        });
+
+        uint256 newKittyId = kitties.push(_kitty) - 1;
+        _transfer(address(0), _owner, newKittyId);
+
+        emit Birth(_owner, newKittyId, momId, dadId, dna);
+
+        return newKittyId;
+    }
 
     /**
      * @dev Returns the number of tokens in ``owner``'s account.
@@ -63,6 +87,15 @@ contract Kittycontract is IERC721 {
         return kittyOwner[tokenId];
     }
 
+    function _transfer(address from, address to, uint256 tokenId) internal {
+        if (address(0) != from) {
+            ownerTokenCount[from] = ownerTokenCount[from].sub(1);
+        }
+        ownerTokenCount[to] = ownerTokenCount[to].add(1);
+        kittyOwner[tokenId] = to;
+
+        emit Transfer(from, to, tokenId);
+    }
 
      /* @dev Transfers `tokenId` token from `msg.sender` to `to`.
      *
@@ -82,10 +115,6 @@ contract Kittycontract is IERC721 {
         require(tokenId < kitties.length, "Kitty does not exist");
         require(kittyOwner[tokenId] == msg.sender, "You do not own this kitty");
 
-        ownerTokenCount[msg.sender] = ownerTokenCount[msg.sender].sub(1);
-        ownerTokenCount[to] = ownerTokenCount[to].add(1);
-        kittyOwner[tokenId] = to;
-
-        emit Transfer(msg.sender, to, tokenId);
+        _transfer(msg.sender, to, tokenId);
     }
 }
