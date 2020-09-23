@@ -22,10 +22,16 @@ contract Kittycontract is IERC721, Ownable {
 
     Kitty[] kitties;
 
+    uint8 constant MAX_GEN0 = 10;
+    uint8 counter_gen0 = 0;
+
     mapping(address => uint256) ownerTokenCount;
     mapping(uint256 => address) kittyOwner;
 
     function createKittyGen0(uint256 _dna) public onlyOwner {
+        require (counter_gen0 < MAX_GEN0 - 1, "Max GEN0 exceeded");
+
+        counter_gen0++;
         _createKitty(0, 0, 0, _dna, msg.sender);
     }
 
